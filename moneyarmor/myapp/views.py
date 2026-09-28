@@ -126,7 +126,7 @@ def reg_verify_otp(request):
             logger.error("Pengguna tidak ditemukan: %s", email)
             return JsonResponse({'success': False, 'message': 'Pengguna tidak ditemukan'})
 
-        if user.otp == otp or otp == 'ABC12345':
+        if user.otp == otp:
             user.is_active = True
             user.otp = ''
             user.otp_created_at = None  # Setel ke None setelah verifikasi berhasil
@@ -234,6 +234,7 @@ def reset_password(request):
 def beranda(request):
     return render(request, 'halaman_setelah_login.html')
 
+@login_required
 def simpan_transaksi(request):
     if request.method == 'POST':
         data = json.loads(request.body)
@@ -246,6 +247,7 @@ def simpan_transaksi(request):
 
         # Simpan transaksi ke dalam database
         transaksi_baru = Transaksi.objects.create(
+            user=request.user,
             tanggal=tanggal,
             tipe_transaksi=tipe_transaksi,
             kategori=kategori,
@@ -257,11 +259,12 @@ def simpan_transaksi(request):
 
     return JsonResponse({'status': 'error', 'message': 'Metode tidak diizinkan.'})
 
+@login_required
 def ambil_transaksi(request):
     if request.method == 'GET':
         try:
-            # Ambil semua data transaksi dari database
-            transactions = Transaksi.objects.all()
+            # Ambil data transaksi pengguna yang sedang login
+            transactions = Transaksi.objects.filter(user=request.user)
 
             # Pisahkan transaksi menjadi pemasukan dan pengeluaran
             incomeTransactions = transactions.filter(tipe_transaksi='Pemasukan').values()

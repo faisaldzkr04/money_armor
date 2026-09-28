@@ -24,7 +24,7 @@ class User(AbstractUser):
     )
 
     def __str__(self):
-        return self.email
+        return self.email or self.username
 
 class IncomeData(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE)
@@ -37,8 +37,6 @@ class IncomeData(models.Model):
 
     def __str__(self):
         return f"IncomeData {self.id} for user {self.user.username}"
-    
-User = get_user_model()
 
 class Profile(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
@@ -65,11 +63,12 @@ class Transaksi(models.Model):
         ('Keinginan', 'Keinginan'),
     ]
 
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     tanggal = models.DateField()
     tipe_transaksi = models.CharField(max_length=20, choices=TIPETRANSAKSI_CHOICES)
     kategori = models.CharField(max_length=20, choices=KATEGORI_CHOICES)
     deskripsi = models.TextField()
-    nominal = models.DecimalField(max_digits=15, decimal_places=0)  # Ubah decimal_places sesuai kebutuhan
+    nominal = models.DecimalField(max_digits=15, decimal_places=0)
 
     def __str__(self):
-        return f"{self.tanggal} - {self.tipe_transaksi} - {self.kategori} - {self.nominal}"
+        return f"{self.tanggal} - {self.tipe_transaksi} - {self.kategori} - {self.nominal}"
